@@ -41,33 +41,28 @@
     eval('SceneManager.updateMain = ' + fnCode)
   }
 
-  // 注册快捷键到 Input.keyMapper
-  Input.keyMapper[90] = 'z' // Z键 - 正常速度
-  Input.keyMapper[88] = 'x' // X键 - 减速
-  Input.keyMapper[67] = 'c' // C键 - 加速
+  document.addEventListener('keydown', function (e) {
+    if (!e.shiftKey) return
 
-  // 处理速度快捷键
-  var _SceneManager_updateInputData = SceneManager.updateInputData
-  SceneManager.updateInputData = function () {
-    _SceneManager_updateInputData.call(this)
-
-    try {
-      if (Input.isPressed('shift')) {
-        if (Input.isTriggered('z')) {
-          var currentSpeed = $gameSpeed.getSpeed()
-
-          if (currentSpeed !== 1) {
-            $gameSpeed.setSpeed(1.0)
-            $gameSpeed.prevToggleSpeed = currentSpeed
-          } else {
-            $gameSpeed.setSpeed($gameSpeed.prevToggleSpeed)
-          }
-        } else if (Input.isTriggered('x')) {
-          $gameSpeed.setSpeed($gameSpeed.getSpeed() - speedStep)
-        } else if (Input.isTriggered('c')) {
-          $gameSpeed.setSpeed($gameSpeed.getSpeed() + speedStep)
+    switch (e.key) {
+      case 'z': // Z键 - 切换正常速度
+        var currentSpeed = $gameSpeed.getSpeed()
+        if (currentSpeed !== 1) {
+          $gameSpeed.setSpeed(1.0)
+          $gameSpeed.prevToggleSpeed = currentSpeed
+        } else {
+          $gameSpeed.setSpeed($gameSpeed.prevToggleSpeed)
         }
-      }
-    } catch (error) {}
-  }
+        e.preventDefault()
+        break
+      case 'x': // X键 - 减速
+        $gameSpeed.setSpeed($gameSpeed.getSpeed() - speedStep)
+        e.preventDefault()
+        break
+      case 'c': // C键 - 加速
+        $gameSpeed.setSpeed($gameSpeed.getSpeed() + speedStep)
+        e.preventDefault()
+        break
+    }
+  })
 })()
