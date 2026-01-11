@@ -44,7 +44,7 @@
   document.addEventListener('keydown', function (e) {
     if (!e.shiftKey) return
 
-    switch (e.key) {
+    switch (e.key.toLowerCase()) {
       case 'z': // Z键 - 切换正常速度
         var currentSpeed = $gameSpeed.getSpeed()
         if (currentSpeed !== 1) {
