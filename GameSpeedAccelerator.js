@@ -21,7 +21,17 @@
     },
   }
 
-  if (SceneManager.determineRepeatNumber) {
+  if (typeof Zaun !== 'undefined' && Zaun.Performance && SceneManager.determineRepeatNumber) {
+    // rmmz + Zaun
+    var _SceneManager_determineRepeatNumber = SceneManager.determineRepeatNumber
+    SceneManager.determineRepeatNumber = function (deltaTime) {
+      return _SceneManager_determineRepeatNumber.call(this, deltaTime) * $gameSpeed.getSpeed()
+    }
+    SceneManager.initGraphics = function () {
+      if (!Graphics.initialize()) throw new Error('Failed to initialize graphics.')
+      Graphics.setTickHandler(this.update.bind(this))
+    }
+  } else if (SceneManager.determineRepeatNumber) {
     // rmmz
     var _SceneManager_determineRepeatNumber = SceneManager.determineRepeatNumber
     SceneManager.determineRepeatNumber = function (deltaTime) {
@@ -36,7 +46,7 @@
     var fnCode = SceneManager.updateMain.toString()
     fnCode = fnCode.replace(
       /this\._accumulator\s*\+=\s*fTime/,
-      'this._accumulator += fTime * $gameSpeed.getSpeed()'
+      'this._accumulator += fTime * $gameSpeed.getSpeed()',
     )
     eval('SceneManager.updateMain = ' + fnCode)
   }
