@@ -122,51 +122,27 @@ if not errorlevel 1 (
     )
 )
 
-:: 获取短路径名（8.3格式），避免特殊字符问题
-for %%F in ("!PLUGINS_JS_PATH!") do set "PLUGINS_JS_SHORT=%%~sF"
-
-:: 读取文件内容，找到最后的 ]
+:: 使用PowerShell处理文件，避免行长度限制
 set "TEMP_FILE=!PLUGINS_JS_DIR!plugins_temp.js"
-set "FOUND_END=0"
-set "LINE_COUNT=0"
 
-for /f "usebackq delims=" %%i in ("!PLUGINS_JS_SHORT!") do (
-    set /a LINE_COUNT+=1
-    set "LINE=%%i"
-    echo !LINE! | findstr /R "\]" >nul 2>&1
-    if not errorlevel 1 (
-        set FOUND_END=1
-        set LAST_BRACKET_LINE=!LINE_COUNT!
-    )
-)
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+"$content = Get-Content -Path '!PLUGINS_JS_PATH!' -Raw -Encoding UTF8; ^
+if ($content -notmatch '\];') { ^
+    Write-Host '[错误] 无法在 plugins.js 中找到正确的插入位置'; ^
+    exit 1; ^
+}; ^
+$newPlugin = ',{' + [Environment]::NewLine + ^
+'  \"name\": \"GameSpeedAccelerator\",' + [Environment]::NewLine + ^
+'  \"status\": true,' + [Environment]::NewLine + ^
+'  \"description\": \"游戏变速器插件\",' + [Environment]::NewLine + ^
+'  \"parameters\": {' + [Environment]::NewLine + ^
+'    \"defaultSpeed\": \"1.0\",' + [Environment]::NewLine + ^
+'    \"speedStep\": \"0.5\"' + [Environment]::NewLine + ^
+'  }' + [Environment]::NewLine + ^
+'}' + [Environment]::NewLine; ^
+$content = $content -replace '\];', ($newPlugin + '];'); ^
+Set-Content -Path '!PLUGINS_JS_PATH!' -Value $content -Encoding UTF8 -NoNewline"
 
-if !FOUND_END! equ 0 (
-    echo [错误] 无法在 plugins.js 中找到正确的插入位置
-    echo 请手动按照 README.md 的指引进行安装
-    pause
-    exit /b 1
-)
-
-:: 重新读取文件并在正确位置插入配置
-set "CURRENT_LINE=0"
-(for /f "usebackq delims=" %%i in ("!PLUGINS_JS_SHORT!") do (
-    set /a CURRENT_LINE+=1
-    if !CURRENT_LINE! equ !LAST_BRACKET_LINE! (
-        echo ,{
-        echo   "name": "GameSpeedAccelerator",
-        echo   "status": true,
-        echo   "description": "游戏变速器插件",
-        echo   "parameters": {
-        echo     "defaultSpeed": "1.0",
-        echo     "speedStep": "0.5"
-        echo   }
-        echo }
-    )
-    echo %%i
-)) > "!TEMP_FILE!"
-
-:: 替换原文件
-move /Y "!TEMP_FILE!" "!PLUGINS_JS_PATH!" >nul
 if !errorlevel! neq 0 (
     echo [错误] 更新 plugins.js 失败
     echo 正在恢复备份...
