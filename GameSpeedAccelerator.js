@@ -24,7 +24,21 @@
   if (typeof Zaun !== 'undefined' && Zaun.Performance && SceneManager.determineRepeatNumber) {
     // rmmz + Zaun
     var fnCode = Graphics.update.toString()
-    fnCode = fnCode.replace('INTERNAL', 'Math.round(16.666 / $gameSpeed.getSpeed())')
+    fnCode = fnCode
+      .replace('INTERNAL', '16')
+      .replace(/this\._stage.*/, '')
+      .replace(
+        'this._tickHandler(deltaTime);',
+        `this._tickCount = this._tickCount || 0;
+         this._tickCount += 2 * $gameSpeed.getSpeed();
+         for (var i = 0; i < Math.floor(this._tickCount / 2); i++) {
+           this._tickHandler(deltaTime);
+           this._stage !== null && this.renderer.render(this._stage);
+         }
+         this._tickCount = this._tickCount % 2;
+      `,
+      )
+
     eval(`Graphics.update = ${fnCode}`)
   } else if (SceneManager.determineRepeatNumber) {
     // rmmz
