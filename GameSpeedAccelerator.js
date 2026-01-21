@@ -57,7 +57,12 @@
       /this\._accumulator\s*\+=\s*fTime/,
       'this._accumulator += fTime * $gameSpeed.getSpeed()',
     )
-    eval('SceneManager.updateMain = ' + fnCode)
+
+    try {
+      eval('SceneManager.updateMain = ' + fnCode)
+    } catch (error) {
+      eval('SceneManager.updateMain = function ' + fnCode)
+    }
   }
 
   document.addEventListener('keydown', function (e) {
