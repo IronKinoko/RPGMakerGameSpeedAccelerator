@@ -23,14 +23,9 @@
 
   if (typeof Zaun !== 'undefined' && Zaun.Performance && SceneManager.determineRepeatNumber) {
     // rmmz + Zaun
-    var _SceneManager_determineRepeatNumber = SceneManager.determineRepeatNumber
-    SceneManager.determineRepeatNumber = function (deltaTime) {
-      return _SceneManager_determineRepeatNumber.call(this, deltaTime) * $gameSpeed.getSpeed()
-    }
-    SceneManager.initGraphics = function () {
-      if (!Graphics.initialize()) throw new Error('Failed to initialize graphics.')
-      Graphics.setTickHandler(this.update.bind(this))
-    }
+    var fnCode = Graphics.update.toString()
+    fnCode = fnCode.replace('INTERNAL', 'Math.round(16.666 / $gameSpeed.getSpeed())')
+    eval(`Graphics.update = ${fnCode}`)
   } else if (SceneManager.determineRepeatNumber) {
     // rmmz
     var _SceneManager_determineRepeatNumber = SceneManager.determineRepeatNumber
