@@ -127,11 +127,11 @@ set "TEMP_FILE=!PLUGINS_JS_DIR!plugins_temp.js"
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
 "$content = Get-Content -Path '!PLUGINS_JS_PATH!' -Raw -Encoding UTF8; ^
-if ($content -notmatch '\];') { ^
+if ($content -notmatch '^\[') { ^
     Write-Host '[错误] 无法在 plugins.js 中找到正确的插入位置'; ^
     exit 1; ^
 }; ^
-$newPlugin = ',{' + [Environment]::NewLine + ^
+$newPlugin = '{' + [Environment]::NewLine + ^
 '  \"name\": \"GameSpeedAccelerator\",' + [Environment]::NewLine + ^
 '  \"status\": true,' + [Environment]::NewLine + ^
 '  \"description\": \"游戏变速器插件\",' + [Environment]::NewLine + ^
@@ -139,8 +139,8 @@ $newPlugin = ',{' + [Environment]::NewLine + ^
 '    \"defaultSpeed\": \"1.0\",' + [Environment]::NewLine + ^
 '    \"speedStep\": \"0.5\"' + [Environment]::NewLine + ^
 '  }' + [Environment]::NewLine + ^
-'}' + [Environment]::NewLine; ^
-$content = $content -replace '\];', ($newPlugin + '];'); ^
+'},' + [Environment]::NewLine; ^
+$content = $content -replace '^\[\r?\n', ('[' + [Environment]::NewLine + $newPlugin); ^
 Set-Content -Path '!PLUGINS_JS_PATH!' -Value $content -Encoding UTF8 -NoNewline"
 
 if !errorlevel! neq 0 (
